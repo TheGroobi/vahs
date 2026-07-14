@@ -1,0 +1,26 @@
+# --- Nix ---
+# Build output symlinks from `nix build` — point into /nix/store, never commit.
+result
+result-*
+
+# direnv / nix-direnv (if adopted later)
+.direnv/
+
+# --- Rust services (server/, TBD) ---
+target/
+
+# --- Firmware (ESP32, TBD) ---
+.pio/                 # PlatformIO
+firmware/**/build/    # ESP-IDF
+sdkconfig.old
+
+# --- Secrets ---
+# Real secrets are committed ENCRYPTED via sops-nix/agenix. These patterns are
+# for plaintext material that must never leave the machine:
+.env
+*.pem
+
+# --- OS / editor cruft ---
+.DS_Store
+*.swp
+*~
