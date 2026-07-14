@@ -32,6 +32,7 @@
 
   networking.firewall.allowedTCPPorts = [ 22 ];
 
+  virtualisation.vmVariant.users.users.groobi.initialPassword = "test";
   # pins backwards-compatible defaults for stateful things.
   system.stateVersion = "26.05";
 }
