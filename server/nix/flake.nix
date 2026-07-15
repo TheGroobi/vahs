@@ -30,6 +30,7 @@
 
         iso = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
+          specialArgs = { inherit nixpkgs; };
           modules = [
             ./installer.nix
           ];
