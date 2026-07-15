@@ -10,6 +10,9 @@
   networking.hostName = "vahs-iso";
   networking.useDHCP = true;
 
+  services.openssh.enable = true;
+  isoImage.makeEfiBootable = true;
+
   services.avahi = {
     enable = true;
     nssmdns4 = true;
