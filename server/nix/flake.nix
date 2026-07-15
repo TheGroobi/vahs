@@ -17,13 +17,23 @@
       ...
     }:
     {
-      nixosConfigurations.t630 = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          disko.nixosModules.disko
-          ./disk-config.nix
-          ./configuration.nix
-        ];
+      nixosConfigurations = {
+
+        t630 = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            disko.nixosModules.disko
+            ./disk-config.nix
+            ./configuration.nix
+          ];
+        };
+
+        iso = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            ./installer.nix
+          ];
+        };
       };
     };
 }

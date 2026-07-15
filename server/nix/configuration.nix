@@ -17,10 +17,11 @@
   users.users.groobi = {
     isNormalUser = true;
     extraGroups = [ "wheel" ]; # 'wheel' = sudo
-    # No password set — login is SSH-key-only (the secure default for the real box).
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILnF8ELhQU2XJE2CvrY+YVpEXvJxglyD6Mb80v7jJAdU groobi@vahs"
-    ];
+
+    # login is key-only
+    openssh.authorizedKeys = {
+      keys = import ./keys.nix;
+    };
   };
 
   services.openssh = {
