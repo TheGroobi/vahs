@@ -1,8 +1,14 @@
-VM := ./nix\#nixosConfigurations.t630.config.system.build.vm
+PREFIX := ./nix\#nixosConfigurations
 
-build:
+VM := $(PREFIX).t630.config.system.build.vm
+iso := $(PREFIX).iso.config.system.build.isoImage
+
+.PHONY: build build-iso
+build: ATTR = $(VM)
+build-iso: ATTR = $(iso)
+build build-iso:
 	git add ./nix
-	nix build '$(VM)'
+	nix build '$(ATTR)'
 
 run: build
 	./result/bin/run-*-vm
