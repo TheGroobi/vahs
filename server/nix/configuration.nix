@@ -6,15 +6,13 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # --- Root fs ---
-  # `disko` will redefine this on the real t630 later; VM ignores this
-  fileSystems."/" = {
-    device = "/dev/disk/by-label/nixos";
-    fsType = "ext4";
-  };
-
   networking.hostName = "vahs";
   time.timeZone = "Europe/Warsaw";
+
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
   users.users.groobi = {
     isNormalUser = true;

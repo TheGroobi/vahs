@@ -3,12 +3,27 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  };
-
-  outputs = { self, nixpkgs, ... }: {
-    nixosConfigurations.t630 = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [ ./configuration.nix ];
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
+
+  outputs =
+    {
+      self,
+      nixpkgs,
+      disko,
+      ...
+    }:
+    {
+      nixosConfigurations.t630 = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          disko.nixosModules.disko
+          ./disk-config.nix
+          ./configuration.nix
+        ];
+      };
+    };
 }
