@@ -6,6 +6,7 @@
 {
   imports = [ "${nixpkgs}/nixos/modules/installer/cd-dvd/iso-image.nix" ];
   users.users.root.openssh.authorizedKeys.keys = import ./keys.nix;
+  users.users.root.initialPassword = "test";
 
   networking.hostName = "vahs-iso";
   networking.useDHCP = true;
