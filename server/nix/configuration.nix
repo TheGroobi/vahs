@@ -29,6 +29,14 @@
     settings.PasswordAuthentication = false;
   };
 
+  services.mosquitto.enable = true;
+
+  environment.systemPackages = with pkgs; [ sqlite ];
+
+  systemd.tmpfiles.rules = [
+    "d /var/lib/vahs 0755 groobi groobi -"
+  ];
+
   networking.firewall.allowedTCPPorts = [ 22 ];
 
   virtualisation.vmVariant.users.users.groobi.initialPassword = "test";
