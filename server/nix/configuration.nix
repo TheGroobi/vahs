@@ -36,8 +36,9 @@
   system.stateVersion = "26.05";
   system.autoUpgrade = {
     enable = true;
-    flake = "github:TheGroobi/vahs?dir=server/nix";
     allowReboot = true;
-    rebootWindw = "04:00-05:00";
+    flake = "github:TheGroobi/vahs?dir=server/nix#t630";
+    dates = "04:00";
+    randomizedDelaySec = "45min";
   };
 }
