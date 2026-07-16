@@ -34,4 +34,10 @@
   virtualisation.vmVariant.users.users.groobi.initialPassword = "test";
   # pins backwards-compatible defaults for stateful things.
   system.stateVersion = "26.05";
+  system.autoUpgrade = {
+    enable = true;
+    flake = "github:TheGroobi/vahs?dir=server/nix";
+    allowReboot = true;
+    rebootWindw = "04:00-05:00";
+  };
 }
