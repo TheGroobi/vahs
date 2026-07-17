@@ -1,0 +1,22 @@
+CompileFlags:
+  Compiler: clang
+  Add:
+    - --target=riscv32-esp-elf
+    - --sysroot=/home/groobi/.espressif/tools/riscv32-esp-elf/esp-15.2.0_20251204/riscv32-esp-elf/riscv32-esp-elf
+    - -isystem/home/groobi/.espressif/tools/riscv32-esp-elf/esp-15.2.0_20251204/riscv32-esp-elf/picolibc/include
+    - -isystem/home/groobi/.espressif/tools/riscv32-esp-elf/esp-15.2.0_20251204/riscv32-esp-elf/picolibc/riscv32-esp-elf/sys-include
+  Remove:
+    - -mlongcalls
+    - -march=*
+    - -mabi=*
+    - -m*
+    - -ffreestanding
+    - -fshort-enums
+    - -nostdlib*
+    - -fno-*
+    - -fzero-init-padding-bits=*
+    - -fmacro-prefix-map=*
+    - -fdebug-prefix-map=*
+    - -fdiagnostics-color=*
+    - -fstrict-volatile-bitfields
+    - -specs=*
