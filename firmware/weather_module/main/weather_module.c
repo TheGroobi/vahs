@@ -7,19 +7,37 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 #include <freertos/task.h>
+#include <stdint.h>
 
 #define SDA_PIN 6
 #define SCL_PIN 7
+#define BIT_LENGTH 8
 
 #define DEVICE_ADDRESS 0x76 // ESP32-S3 address
+#define CTRL_MEAS_ADDR 0xF4
+
+int set_config(i2c_master_dev_handle_t dev_handle) {
+  uint8_t osrs_p = 1;
+  uint8_t osrs_t = 1;
+  uint8_t mode = 3;
+  uint8_t value = ((osrs_t << 5) | (osrs_p << 2) | mode);
+  uint8_t config[] = {CTRL_MEAS_ADDR, value};
+
+  return i2c_master_transmit(dev_handle, config, 2, 1000);
+}
 
 int talk(i2c_master_dev_handle_t dev_handle) {
-  uint8_t reg = 0xD0;
-  uint8_t data;
+  uint8_t reg = CTRL_MEAS_ADDR;
+  uint8_t buf[BIT_LENGTH];
+  int err;
 
-  int res = i2c_master_transmit_receive(dev_handle, &reg, 1, &data, 1, 1000);
-  printf("Chip ID: 0x%02X\n", data);
-  return res;
+  err = i2c_master_transmit_receive(dev_handle, &reg, 1, buf, BIT_LENGTH, 1000);
+
+  for (int i = 0; i < BIT_LENGTH; i++) {
+    printf("reg 0x%02X = 0x%02X\n", reg + i, buf[i]);
+  }
+
+  return err;
 }
 
 void app_main(void) {
@@ -55,8 +73,9 @@ void app_main(void) {
   // }
   //
 
+  set_config(dev_handle);
   while (1) {
     ESP_ERROR_CHECK(talk(dev_handle));
-    vTaskDelay(2000);
+    vTaskDelay(1000);
   };
 }

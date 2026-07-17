@@ -20,6 +20,16 @@ make fresh    # same, but wipes the VM disk first
 Log in as `groobi` / `test` (VM-only password). The real T630 gets provisioned
 later with nixos-anywhere.
 
+## Firmware
+
+ESP32-C3 firmware lives in `firmware/`. From `firmware/`:
+
+```sh
+make flash     # build + flash to the connected ESP32-C3
+make monitor   # open serial monitor
+make clean     # wipe build artifacts
+```
+
 ## Roadmap
 
 - [x] NixOS flake boots as a local VM
@@ -31,3 +41,5 @@ later with nixos-anywhere.
 - [ ] visualization
 
 Detailed notes, hardware BOM, and ideas live in `~/notes/projects/vahs.md`.
+
+
