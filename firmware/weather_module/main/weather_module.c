@@ -43,10 +43,11 @@ uint32_t concat_bytes(uint8_t *bytes, int start, size_t len) {
 }
 
 int read_who_am_i(i2c_master_dev_handle_t dev_handle) {
+  uint8_t reg = WHO_AM_I_ADDR;
   uint8_t buf;
   uint8_t err;
 
-  err = i2c_master_receive(dev_handle, &buf, 1, 1000);
+  err = i2c_master_transmit_receive(dev_handle, &reg, 1, &buf, 1, 1000);
   printf("BME280 ID: %u\n", buf);
   return err;
 }
