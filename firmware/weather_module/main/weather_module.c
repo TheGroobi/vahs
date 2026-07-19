@@ -32,47 +32,18 @@ esp_err_t read_who_am_i(i2c_master_dev_handle_t dev_handle) {
 
 esp_err_t talk(i2c_master_dev_handle_t dev_handle) {
   uint8_t temp_reg = TEMP_ADDR;
-  uint8_t calibration_reg_1 = DIG_T1_ADDR;
-  uint8_t calibration_reg_2 = DIG_H2_ADDR;
   uint8_t weather_buf[BIT_LENGTH] = {0};
-  uint8_t calibration_buf_1[FIRST_CALIBRATION_LENGTH] = {0};
-  uint8_t calibration_buf_2[SECOND_CALIBRATION_LENGTH] = {0};
 
   esp_err_t err = read_register(dev_handle, &temp_reg, weather_buf, BIT_LENGTH);
-  err = read_register(dev_handle, &calibration_reg_1, calibration_buf_1,
-                      FIRST_CALIBRATION_LENGTH);
-  err = read_register(dev_handle, &calibration_reg_2, calibration_buf_2,
-                      SECOND_CALIBRATION_LENGTH);
+  weather_result_t weather = parse_weather(weather_buf, err);
 
-  data_t weather = parse_weather(weather_buf);
-  calibration_t calibration1 = parse_first_calibration(calibration_buf_1);
-  calibration_t calibration2 = parse_second_calibration(calibration_buf_2);
-  printf("T1: %u\n", calibration1.dig_T1);
-  printf("T2: %d\n", calibration1.dig_T2);
-  printf("T3: %d\n", calibration1.dig_T3);
-
-  printf("P1: %u\n", calibration1.dig_P1);
-  printf("P2: %d\n", calibration1.dig_P2);
-  printf("P3: %d\n", calibration1.dig_P3);
-  printf("P4: %d\n", calibration1.dig_P4);
-  printf("P5: %d\n", calibration1.dig_P5);
-  printf("P6: %d\n", calibration1.dig_P6);
-  printf("P7: %d\n", calibration1.dig_P7);
-  printf("P8: %d\n", calibration1.dig_P8);
-  printf("P9: %d\n", calibration1.dig_P9);
-
-  printf("H1: %u\n", calibration1.dig_H1);
-  printf("H2: %d\n", calibration1.dig_H2);
-  printf("H3: %u\n", calibration1.dig_H3);
-  printf("H4: %d\n", calibration1.dig_H4);
-  printf("H5: %d\n", calibration1.dig_H5);
-  printf("H6: %d\n", calibration1.dig_H6);
-
-  // calibration for human readable format
-  printf("pressure raw: %" PRIu32 "\n", weather.pressure);
-  printf("temp raw: %" PRIu32 "\n", weather.temperature);
-  printf("humidity raw: %u\n", weather.humidity);
-
+  if (weather.valid) {
+    printf("pressure raw: %" PRIu32 "\n", weather.weather.pressure);
+    printf("temp raw: %" PRIu32 "\n", weather.weather.temperature);
+    printf("humidity raw: %u\n", weather.weather.humidity);
+  } else {
+    printf("Invalid weather - skipping");
+  }
   return err;
 }
 
@@ -109,6 +80,8 @@ void app_main(void) {
 
   ESP_ERROR_CHECK(set_config(dev_handle));
   vTaskDelay(100);
+
+  ESP_ERROR_CHECK(read_calibration(dev_handle));
 
   for (;;) {
     esp_err_t err = talk(dev_handle);

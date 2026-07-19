@@ -17,15 +17,18 @@ uint32_t concat_bytes(uint8_t *bytes, int start, size_t len,
   return value;
 }
 
-data_t parse_weather(uint8_t *buf) {
+weather_result_t parse_weather(uint8_t *buf, esp_err_t err) {
   data_t data;
+  weather_result_t result;
 
   // right shift by 4 to avoid padding
   data.pressure = concat_bytes(buf, 0, 3, false) >> 4;
   data.temperature = concat_bytes(buf, 3, 3, false) >> 4;
   data.humidity = concat_bytes(buf, 6, 2, false);
 
-  return data;
+  result.weather = data;
+  result.valid = err == 0;
+  return result;
 }
 
 esp_err_t enable_humidity(i2c_master_dev_handle_t dev_handle) {

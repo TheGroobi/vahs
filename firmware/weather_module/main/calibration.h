@@ -1,5 +1,7 @@
 #pragma once
 
+#include "esp_err.h"
+#include <driver/i2c_master.h>
 #include <stdint.h>
 
 #define DIG_T1_ADDR 0x88
@@ -31,5 +33,11 @@ typedef struct {
   int8_t dig_H6;
 } calibration_t;
 
-calibration_t parse_first_calibration(uint8_t *buf);
-calibration_t parse_second_calibration(uint8_t *buf);
+typedef struct {
+  calibration_t calibration;
+  bool valid;
+} calibration_result_t;
+
+calibration_result_t parse_first_calibration(uint8_t *buf, esp_err_t err);
+calibration_result_t parse_second_calibration(uint8_t *buf, esp_err_t err);
+esp_err_t read_calibration(i2c_master_dev_handle_t dev_handle);
