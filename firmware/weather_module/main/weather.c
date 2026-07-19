@@ -5,7 +5,7 @@ uint32_t concat_bytes(uint8_t *bytes, int start, size_t len,
   uint32_t value = 0;
 
   if (little_endian) {
-    for (int i = len - 1; i >= start; i--) {
+    for (int i = start + len - 1; i >= start; i--) {
       value = (bytes[i] | (value << 8));
     };
   } else {
