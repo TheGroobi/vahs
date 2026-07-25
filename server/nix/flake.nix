@@ -7,6 +7,7 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    sops-nix.url = "github:Mic92/sops-nix";
   };
 
   outputs =
@@ -14,6 +15,7 @@
       self,
       nixpkgs,
       disko,
+      sops-nix,
       ...
     }:
     {
@@ -25,6 +27,7 @@
             disko.nixosModules.disko
             ./disk-config.nix
             ./configuration.nix
+            sops-nix.nixosModules.sops
           ];
         };
 
