@@ -65,12 +65,19 @@ esp_err_t talk(i2c_master_dev_handle_t dev_handle,
 
   int32_t temp = compensate_temperature(weather.weather.temperature,
                                         calibration->calibration);
+  int32_t humidity =
+      compensate_humidity(weather.weather.humidity, calibration->calibration);
+  int32_t pressure =
+      compensate_pressure(weather.weather.pressure, calibration->calibration);
 
   printf("pressure raw: %" PRIu32 " | temp raw: %" PRIu32 " | humidity "
          "raw: %u\n",
          weather.weather.pressure, weather.weather.temperature,
          weather.weather.humidity);
-  printf("temp compensated: %f\n", (double)temp / 100);
+  printf("temp: %f°C\n", (double)temp / 100);
+  printf("humidity: %f%c \n", (double)humidity / 1024,
+         37); // 37 is the ascii for %
+  printf("pressure: %f hPa\n", (double)pressure / 256000);
 
   return ESP_OK;
 }

@@ -105,10 +105,14 @@ esp_err_t read_calibration(i2c_master_dev_handle_t dev_handle,
       parse_first_calibration(calibration_buf_1, err);
 
   err = i2c_master_transmit_receive(dev_handle, &calibration_reg_2, 1,
-                                    calibration_buf_2,
-                                    BME280_CALIB_SECOND_LEN, 1000);
+                                    calibration_buf_2, BME280_CALIB_SECOND_LEN,
+                                    1000);
   calibration_result_t calibration2 =
       parse_second_calibration(calibration_buf_2, err);
+
+  printf("first valid: %d\n", calibration1.valid);
+  printf("second valid: %d\n", calibration2.valid);
+  printf("first err: %s\n", esp_err_to_name(err));
 
   if (!calibration1.valid || !calibration2.valid) {
     c->valid = false;
@@ -160,5 +164,48 @@ int32_t compensate_temperature(int32_t adc_temp, calibration_t c) {
   return temp;
 }
 
-int32_t compensate_humidity(int32_t adc_hum) { return 1; }
-int64_t compensate_pressure(int32_t adc_pres) { return 1; }
+// Output value of "47445" represents 47445/1024 = 46.333 %RH
+uint32_t compensate_humidity(int32_t adc_hum, calibration_t c) {
+  int32_t v_x1_u32r;
+  v_x1_u32r = (temp_fine - ((int32_t)76800));
+
+  v_x1_u32r =
+      (((((adc_hum << 14) - (((int32_t)c.dig_H4) << 20) -
+          (((int32_t)c.dig_H5) * v_x1_u32r)) +
+         (int32_t)16384)) >>
+       15) *
+      (((((((v_x1_u32r * ((int32_t)c.dig_H6)) >> 10) *
+           (((v_x1_u32r * ((int32_t)c.dig_H3)) >> 11) + ((int32_t)32768))) >>
+          10) +
+         ((int32_t)2097152)) *
+            ((int32_t)c.dig_H2) +
+        8192) >>
+       14);
+  v_x1_u32r = (v_x1_u32r - (((((v_x1_u32r >> 15) * (v_x1_u32r >> 15)) >> 7) *
+                             ((int32_t)c.dig_H1)) >>
+                            4));
+  v_x1_u32r = (v_x1_u32r < 0 ? 0 : v_x1_u32r);
+  v_x1_u32r = (v_x1_u32r > 419430400 ? 419430400 : v_x1_u32r);
+  return (uint32_t)(v_x1_u32r >> 12);
+}
+
+// output value of "24674867" represents 24674867/256 = 96386.2 Pa = 963.862 hPa
+uint32_t compensate_pressure(int32_t adc_pres, calibration_t c) {
+  int64_t var1, var2, pressure;
+  var1 = ((int64_t)temp_fine) - 128000;
+  var2 = var1 * var1 * (int64_t)c.dig_P6;
+  var2 = var2 + ((var1 * (int64_t)c.dig_P5) << 17);
+  var2 = var2 + (((int64_t)c.dig_P4) << 35);
+  var1 = ((var1 * var1 * (int64_t)c.dig_P3) >> 8) +
+         ((var1 * (int64_t)c.dig_P2) << 12);
+  var1 = (((((int64_t)1) << 47) + var1)) * ((int64_t)c.dig_P1) >> 33;
+  if (var1 == 0) {
+    return 0;
+  };
+  pressure = 1048576 - adc_pres;
+  pressure = (((pressure << 31) - var2) * 3125) / var1;
+  var1 = (((int64_t)c.dig_P9) * (pressure >> 13) * (pressure >> 13)) >> 25;
+  var2 = (((int64_t)c.dig_P8) * pressure) >> 19;
+  pressure = ((pressure + var1 + var2) >> 8) + (((int64_t)c.dig_P7) << 4);
+  return (uint32_t)pressure;
+}

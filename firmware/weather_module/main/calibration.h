@@ -45,5 +45,5 @@ esp_err_t read_calibration(i2c_master_dev_handle_t dev_handle,
                            calibration_result_t *c);
 
 int32_t compensate_temperature(int32_t adc_temp, calibration_t c);
-int32_t compensate_humidity(int32_t adc_hum);
-int64_t compensate_pressure(int32_t adc_pres);
+uint32_t compensate_humidity(int32_t adc_hum, calibration_t c);
+uint32_t compensate_pressure(int32_t adc_pres, calibration_t c);
