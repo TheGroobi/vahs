@@ -35,8 +35,7 @@
       {
         address = "0.0.0.0";
         port = 1883;
-        users = { };
-        acl = { };
+        acl = [ "pattern readwrite #" ];
       }
     ];
   };
@@ -50,7 +49,10 @@
     "d /var/lib/vahs 0755 groobi groobi -"
   ];
 
-  networking.firewall.allowedTCPPorts = [ 22 ];
+  networking.firewall.allowedTCPPorts = [
+    22
+    1883
+  ];
 
   virtualisation.vmVariant.users.users.groobi.initialPassword = "test";
   # pins backwards-compatible defaults for stateful things.
