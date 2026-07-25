@@ -43,6 +43,7 @@
   environment.systemPackages = with pkgs; [
     sqlite
     vim
+    git
   ];
 
   systemd.tmpfiles.rules = [
