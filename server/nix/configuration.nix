@@ -36,6 +36,11 @@
         address = "0.0.0.0";
         port = 1883;
         acl = [ "pattern readwrite #" ];
+        users = { };
+        extraConf = ''
+          password_file /etc/mosquitto/passwd
+          allow_anonymous false
+        '';
       }
     ];
   };
