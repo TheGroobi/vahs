@@ -2,13 +2,14 @@
 
 #include "esp_err.h"
 #include <driver/i2c_master.h>
+#include <stdbool.h>
 #include <stdint.h>
 
-#define DIG_T1_ADDR 0x88
-#define FIRST_CALIBRATION_LENGTH 23
+#define BME280_REG_CALIB_FIRST 0x88
+#define BME280_CALIB_FIRST_LEN 23
 
-#define DIG_H2_ADDR 0xE1
-#define SECOND_CALIBRATION_LENGTH 7
+#define BME280_REG_CALIB_SECOND 0xE1
+#define BME280_CALIB_SECOND_LEN 7
 
 typedef struct {
   uint16_t dig_T1;
@@ -40,4 +41,9 @@ typedef struct {
 
 calibration_result_t parse_first_calibration(uint8_t *buf, esp_err_t err);
 calibration_result_t parse_second_calibration(uint8_t *buf, esp_err_t err);
-esp_err_t read_calibration(i2c_master_dev_handle_t dev_handle);
+esp_err_t read_calibration(i2c_master_dev_handle_t dev_handle,
+                           calibration_result_t *c);
+
+int32_t compensate_temperature(int32_t adc_temp, calibration_t c);
+int32_t compensate_humidity(int32_t adc_hum);
+int64_t compensate_pressure(int32_t adc_pres);

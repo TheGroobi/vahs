@@ -91,48 +91,74 @@ calibration_result_t parse_second_calibration(uint8_t *buf, esp_err_t err) {
   return result;
 }
 
-esp_err_t read_calibration(i2c_master_dev_handle_t dev_handle) {
-  uint8_t calibration_reg_1 = DIG_T1_ADDR;
-  uint8_t calibration_reg_2 = DIG_H2_ADDR;
-  uint8_t calibration_buf_1[FIRST_CALIBRATION_LENGTH] = {0};
-  uint8_t calibration_buf_2[SECOND_CALIBRATION_LENGTH] = {0};
+esp_err_t read_calibration(i2c_master_dev_handle_t dev_handle,
+                           calibration_result_t *c) {
+  uint8_t calibration_reg_1 = BME280_REG_CALIB_FIRST;
+  uint8_t calibration_reg_2 = BME280_REG_CALIB_SECOND;
+  uint8_t calibration_buf_1[BME280_CALIB_FIRST_LEN] = {0};
+  uint8_t calibration_buf_2[BME280_CALIB_SECOND_LEN] = {0};
 
   esp_err_t err = i2c_master_transmit_receive(dev_handle, &calibration_reg_1, 1,
                                               calibration_buf_1,
-                                              FIRST_CALIBRATION_LENGTH, 1000);
+                                              BME280_CALIB_FIRST_LEN, 1000);
   calibration_result_t calibration1 =
       parse_first_calibration(calibration_buf_1, err);
 
   err = i2c_master_transmit_receive(dev_handle, &calibration_reg_2, 1,
                                     calibration_buf_2,
-                                    SECOND_CALIBRATION_LENGTH, 1000);
+                                    BME280_CALIB_SECOND_LEN, 1000);
   calibration_result_t calibration2 =
       parse_second_calibration(calibration_buf_2, err);
 
-  if (calibration1.valid) {
-    printf("T1: %u\n", calibration1.calibration.dig_T1);
-    printf("T2: %d\n", calibration1.calibration.dig_T2);
-    printf("T3: %d\n", calibration1.calibration.dig_T3);
-
-    printf("P1: %u\n", calibration1.calibration.dig_P1);
-    printf("P2: %d\n", calibration1.calibration.dig_P2);
-    printf("P3: %d\n", calibration1.calibration.dig_P3);
-    printf("P4: %d\n", calibration1.calibration.dig_P4);
-    printf("P5: %d\n", calibration1.calibration.dig_P5);
-    printf("P6: %d\n", calibration1.calibration.dig_P6);
-    printf("P7: %d\n", calibration1.calibration.dig_P7);
-    printf("P8: %d\n", calibration1.calibration.dig_P8);
-    printf("P9: %d\n", calibration1.calibration.dig_P9);
-
-    printf("H1: %u\n", calibration1.calibration.dig_H1);
-    printf("H2: %d\n", calibration2.calibration.dig_H2);
-    printf("H3: %u\n", calibration2.calibration.dig_H3);
-    printf("H4: %d\n", calibration2.calibration.dig_H4);
-    printf("H5: %d\n", calibration2.calibration.dig_H5);
-    printf("H6: %d\n", calibration2.calibration.dig_H6);
-  } else {
-    printf("Invalid calibration - skipping");
+  if (!calibration1.valid || !calibration2.valid) {
+    c->valid = false;
+    return ESP_ERR_INVALID_STATE;
   }
 
-  return err;
+  c->calibration.dig_T1 = calibration1.calibration.dig_T1;
+  c->calibration.dig_T2 = calibration1.calibration.dig_T2;
+  c->calibration.dig_T3 = calibration1.calibration.dig_T3;
+
+  c->calibration.dig_P1 = calibration1.calibration.dig_P1;
+  c->calibration.dig_P2 = calibration1.calibration.dig_P2;
+  c->calibration.dig_P3 = calibration1.calibration.dig_P3;
+  c->calibration.dig_P4 = calibration1.calibration.dig_P4;
+  c->calibration.dig_P5 = calibration1.calibration.dig_P5;
+  c->calibration.dig_P6 = calibration1.calibration.dig_P6;
+  c->calibration.dig_P7 = calibration1.calibration.dig_P7;
+  c->calibration.dig_P8 = calibration1.calibration.dig_P8;
+  c->calibration.dig_P9 = calibration1.calibration.dig_P9;
+  c->calibration.dig_H1 = calibration1.calibration.dig_H1;
+
+  c->calibration.dig_H2 = calibration2.calibration.dig_H2;
+  c->calibration.dig_H3 = calibration2.calibration.dig_H3;
+  c->calibration.dig_H4 = calibration2.calibration.dig_H4;
+  c->calibration.dig_H5 = calibration2.calibration.dig_H5;
+  c->calibration.dig_H6 = calibration2.calibration.dig_H6;
+
+  c->valid = true;
+  return ESP_OK;
 }
+
+// Returns temperature in DegC, resolution to 0.01 DegC. Output value of "5123"
+// equals 51.23 DegC temp_fine carries fine temperature as a global value,
+// needed for other compensations
+int32_t temp_fine; // t_fine in datasheet
+int32_t compensate_temperature(int32_t adc_temp, calibration_t c) {
+  int32_t var1, var2, temp;
+  var1 =
+      ((((adc_temp >> 3) - ((int32_t)c.dig_T1 << 1))) * ((int32_t)c.dig_T2)) >>
+      11;
+  var2 = (((((adc_temp >> 4) - ((int32_t)c.dig_T1)) *
+            ((adc_temp >> 4) - ((int32_t)c.dig_T1))) >>
+           12) *
+          ((int32_t)c.dig_T3)) >>
+         14;
+  temp_fine = var1 + var2;
+  temp = (temp_fine * 5 + 128) >> 8;
+
+  return temp;
+}
+
+int32_t compensate_humidity(int32_t adc_hum) { return 1; }
+int64_t compensate_pressure(int32_t adc_pres) { return 1; }

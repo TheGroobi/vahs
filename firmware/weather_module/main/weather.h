@@ -2,14 +2,15 @@
 
 #include "esp_err.h"
 #include <driver/i2c_master.h>
+#include <stdbool.h>
 #include <stdint.h>
 
-#define DEV_ADDR 0x76
-#define CTRL_MEAS_ADDR 0xF4
-#define TEMP_ADDR 0xF7
-#define CTRL_HUM_ADDR 0xF2
-#define WHO_AM_I_ADDR 0xD0
-#define BIT_LENGTH 8
+#define BME280_I2C_ADDR 0x76
+#define BME280_REG_CHIP_ID 0xD0
+#define BME280_REG_CTRL_HUM 0xF2
+#define BME280_REG_CTRL_MEAS 0xF4
+#define BME280_REG_DATA 0xF7
+#define SENSOR_DATA_LEN 8
 
 typedef struct {
   uint32_t pressure;
