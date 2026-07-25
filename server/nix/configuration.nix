@@ -29,7 +29,17 @@
     settings.PasswordAuthentication = false;
   };
 
-  services.mosquitto.enable = true;
+  services.mosquitto = {
+    enable = true;
+    listeners = [
+      {
+        address = "0.0.0.0";
+        port = 1883;
+        users = { };
+        acl = { };
+      }
+    ];
+  };
 
   environment.systemPackages = with pkgs; [
     sqlite
