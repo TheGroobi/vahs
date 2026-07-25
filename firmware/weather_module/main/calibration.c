@@ -18,7 +18,6 @@
 // }
 
 calibration_result_t parse_first_calibration(uint8_t *buf, esp_err_t err) {
-  calibration_t data = {};
   calibration_result_t result = {};
 
   if (err != ESP_OK) {
@@ -26,36 +25,27 @@ calibration_result_t parse_first_calibration(uint8_t *buf, esp_err_t err) {
     return result;
   }
 
-  int start = 0;
-  data.dig_T1 = (uint16_t)concat_bytes(buf, start, 2, true);
-  start += 2;
-  data.dig_T2 = (int16_t)concat_bytes(buf, start, 2, true);
-  start += 2;
-  data.dig_T3 = (int16_t)concat_bytes(buf, start, 2, true);
+  calibration_t data = {};
 
-  start += 2;
-  data.dig_P1 = (uint16_t)concat_bytes(buf, start, 2, true);
-  start += 2;
-  data.dig_P2 = (int16_t)concat_bytes(buf, start, 2, true);
-  start += 2;
-  data.dig_P3 = (int16_t)concat_bytes(buf, start, 2, true);
-  start += 2;
-  data.dig_P4 = (int16_t)concat_bytes(buf, start, 2, true);
-  start += 2;
-  data.dig_P5 = (int16_t)concat_bytes(buf, start, 2, true);
-  start += 2;
-  data.dig_P6 = (int16_t)concat_bytes(buf, start, 2, true);
-  start += 2;
-  data.dig_P7 = (int16_t)concat_bytes(buf, start, 2, true);
-  start += 2;
-  data.dig_P8 = (int16_t)concat_bytes(buf, start, 2, true);
-  start += 2;
-  data.dig_P9 = (int16_t)concat_bytes(buf, start, 2, true);
-  start += 2;
-  data.dig_H1 = (uint8_t)concat_bytes(buf, start, 1, true);
+  data.dig_T1 = (uint16_t)concat_bytes(buf, 0, 2, true);
+  data.dig_T2 = (int16_t)concat_bytes(buf, 2, 2, true);
+  data.dig_T3 = (int16_t)concat_bytes(buf, 4, 2, true);
+
+  data.dig_P1 = (uint16_t)concat_bytes(buf, 6, 2, true);
+  data.dig_P2 = (int16_t)concat_bytes(buf, 8, 2, true);
+  data.dig_P3 = (int16_t)concat_bytes(buf, 10, 2, true);
+  data.dig_P4 = (int16_t)concat_bytes(buf, 12, 2, true);
+  data.dig_P5 = (int16_t)concat_bytes(buf, 14, 2, true);
+  data.dig_P6 = (int16_t)concat_bytes(buf, 16, 2, true);
+  data.dig_P7 = (int16_t)concat_bytes(buf, 18, 2, true);
+  data.dig_P8 = (int16_t)concat_bytes(buf, 20, 2, true);
+  data.dig_P9 = (int16_t)concat_bytes(buf, 22, 2, true);
+
+  data.dig_H1 = buf[25];
 
   result.calibration = data;
   result.valid = true;
+
   return result;
 }
 
@@ -71,23 +61,27 @@ calibration_result_t parse_second_calibration(uint8_t *buf, esp_err_t err) {
     return result;
   }
 
-  int start = 0;
-  data.dig_H2 = (int16_t)concat_bytes(buf, start, 2, true);
-  start += 2;
-  data.dig_H3 = (uint8_t)concat_bytes(buf, start, 1, true);
-  start += 1;
-  // buf[start]: 00101010 << 4
-  //  00101010 0000 | buf[start+1]: (01010011 >> 4 = 000001010)
-  //  00101010 00001010 -> mask the bits
-  //  ((buf[start] << 4) | (buf[start+1] >> 4) & high_mask) // this
-  data.dig_H4 = (int16_t)((buf[start] << 4) | (buf[start + 1] & high_mask));
-  start += 1;
-  data.dig_H5 = (int16_t)((buf[start + 1] << 4) | (buf[start] >> 4));
-  start += 2;
-  data.dig_H6 = (int8_t)concat_bytes(buf, start, 1, true);
+  data.dig_H2 = (int16_t)concat_bytes(buf, 0, 2, true);
+
+  data.dig_H3 = buf[2];
+
+  // buf[3]: 00101010 << 4
+  // 00101010 0000 | buf[4]: (01010011 & 00001111)
+  // 00101010 1011 -> 12-bit dig_H4
+  // ((buf[3] << 4) | (buf[4] & high_mask))
+  data.dig_H4 = (int16_t)((buf[3] << 4) | (buf[4] & high_mask));
+
+  // buf[5]: 01010101 << 4
+  // 01010101 0000 | buf[4]: (01010011 >> 4)
+  // 01010101 0101 -> 12-bit dig_H5
+  // ((buf[5] << 4) | (buf[4] >> 4))
+  data.dig_H5 = (int16_t)((buf[5] << 4) | (buf[4] >> 4));
+
+  data.dig_H6 = (int8_t)buf[6];
 
   result.calibration = data;
   result.valid = true;
+
   return result;
 }
 

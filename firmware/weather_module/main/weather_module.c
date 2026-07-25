@@ -74,10 +74,9 @@ esp_err_t talk(i2c_master_dev_handle_t dev_handle,
          "raw: %u\n",
          weather.weather.pressure, weather.weather.temperature,
          weather.weather.humidity);
-  printf("temp: %f°C\n", (double)temp / 100);
-  printf("humidity: %f%c \n", (double)humidity / 1024,
-         37); // 37 is the ascii for %
-  printf("pressure: %f hPa\n", (double)pressure / 256000);
+  printf("temp: %.2f °C\n", temp / 100.0);
+  printf("humidity: %.2f%%\n", humidity / 1024.0);
+  printf("pressure: %.2f hPa\n", pressure / 25600.0);
 
   return ESP_OK;
 }
