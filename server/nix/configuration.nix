@@ -36,13 +36,17 @@
         address = "0.0.0.0";
         port = 1883;
         acl = [ "pattern readwrite #" ];
-        users = { };
-        extraConf = ''
-          password_file /etc/mosquitto/passwd
-          allow_anonymous false
-        '';
+        users = {
+          groobi = {
+            hashedPassword = config.sops.secrets.mosquitto_password.path;
+          };
+        };
       }
     ];
+  };
+
+  sops.secrets.mosquitto_password = {
+    sopsFile = ./secrets/mosquitto.yaml;
   };
 
   environment.systemPackages = with pkgs; [
