@@ -24,6 +24,14 @@
     };
   };
 
+  sops = {
+    defaultSopsFile = ./secrets/mosquitto.yaml;
+    age.keyFile = "/run/secrets.d/age-keys.txt";
+    secrets.mosquitto_password = {
+      sopsFile = ./secrets/mosquitto.yaml;
+    };
+  };
+
   services.openssh = {
     enable = true;
     settings.PasswordAuthentication = false;
@@ -43,14 +51,6 @@
         };
       }
     ];
-  };
-
-  sops = {
-    defaultSopsFile = ./secrets/mosquitto.yaml;
-
-    secrets.mosquitto_password = {
-      sopsFile = ./secrets/mosquitto.yaml;
-    };
   };
 
   environment.systemPackages = with pkgs; [
