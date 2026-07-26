@@ -38,15 +38,19 @@
         acl = [ "pattern readwrite #" ];
         users = {
           groobi = {
-            hashedPassword = config.sops.secrets.mosquitto_password.path;
+            hashedPassword = builtins.readFile config.sops.secrets.mosquitto_password.path;
           };
         };
       }
     ];
   };
 
-  sops.secrets.mosquitto_password = {
-    sopsFile = ./secrets/mosquitto.yaml;
+  sops = {
+    defaultSopsFile = ./secrets/mosquitto.yaml;
+
+    secrets.mosquitto_password = {
+      sopsFile = ./secrets/mosquitto.yaml;
+    };
   };
 
   environment.systemPackages = with pkgs; [
