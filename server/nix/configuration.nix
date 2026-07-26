@@ -35,10 +35,10 @@
       {
         address = "0.0.0.0";
         port = 1883;
-        acl = [ "pattern readwrite #" ];
         users = {
           groobi = {
-            hashedPassword = builtins.readFile config.sops.secrets.mosquitto_password.path;
+            acl = [ "readwrite #" ];
+            hashedPasswordFile = config.sops.secrets.mosquitto_password.path;
           };
         };
       }
